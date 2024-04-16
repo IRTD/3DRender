@@ -38,6 +38,27 @@ impl Matrix4x4 {
         m[(2, 2)] = angle.cos();
         m
     }
+
+    pub fn projection_3d(aspect_ratio: f64, fov: f64, far: f64, near: f64) -> Self {
+        let q = far / (near - far);
+        let mut m = Matrix4x4::default();
+        m[(0, 0)] = fov / aspect_ratio;
+        m[(1, 1)] = fov;
+        m[(2, 2)] = q;
+        m[(3, 2)] = -1.0;
+        m[(2, 3)] = q * near;
+        m
+    }
+
+    pub fn z_rot(angle: f64) -> Self {
+        let mut m = Matrix4x4::default();
+        m[(0, 0)] = angle.cos();
+        m[(0, 1)] = -angle.sin();
+        m[(1, 0)] = angle.sin();
+        m[(1, 1)] = angle.cos();
+        m[(2, 2)] = 1.0;
+        m
+    }
 }
 
 impl From<[[f64; 4]; 4]> for Matrix4x4 {

@@ -1,19 +1,19 @@
 #![allow(unused)]
 
-use std::{rc::Rc, time::Duration};
+use std::time::Duration;
 
-use sdl2::{event::Event, libc::sched_attr, pixels::Color, render::Canvas, video::Window};
+use sdl2::{event::Event, pixels::Color, render::Canvas, video::Window};
 use trigger::matrix::Matrix4x4;
 
 fn main() {
-    let t1 = Matrix4x4::x_rot(0.05);
+    let t1 = Matrix4x4::x_rot(0.01);
     let t2 = Matrix4x4::y_rot(0.03);
     let mut s1 = Matrix4x4::default();
-    s1[(0, 0)] = 150.0;
-    s1[(1, 1)] = 300.0;
+    s1[(0, 0)] = 50.0;
+    s1[(1, 1)] = 100.0;
     let mut s2 = Matrix4x4::default();
-    s2[(0, 0)] = 230.0;
-    s2[(1, 1)] = 230.0;
+    s2[(0, 0)] = 20.0;
+    s2[(1, 1)] = 20.0;
     sdl2_render("Tets", 800, 800, (s1, s2, t1, t2), |c, ctx| {
         let v1: trigger::Vertex = ctx.0.clone().into();
         let v2: trigger::Vertex = ctx.1.clone().into();
@@ -22,7 +22,7 @@ fn main() {
         c.draw_line(p1, p2)?;
         c.draw_line((p1.0, p2.1), (p2.0, p1.1))?;
         ctx.0 = ctx.3 * (ctx.2 * ctx.0);
-        ctx.1 = ctx.2 * (ctx.3 * ctx.1);
+        ctx.1 = ctx.3 * (ctx.2 * ctx.1);
         std::thread::sleep(Duration::from_millis(15));
         Ok(())
     })
