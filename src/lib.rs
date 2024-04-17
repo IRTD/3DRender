@@ -33,13 +33,13 @@ impl From<[f64; 3]> for Vertex {
 
 #[derive(Clone, Copy, Default)]
 pub struct Triangle {
-    vertices: [Matrix4x4; 3],
+    vertices: [Vertex; 3],
 }
 
 impl From<[[f64; 3]; 3]> for Triangle {
     fn from(value: [[f64; 3]; 3]) -> Self {
         Triangle {
-            vertices: value.map(|coords| Vertex::from(coords).into()),
+            vertices: value.map(|coords| Vertex::from(coords)),
         }
     }
 }
@@ -49,9 +49,16 @@ impl Triangle {
         self.vertices.map(|mat| mat.into()).to_vec()
     }
 
+    pub fn apply_vec(&mut self, mat: Matrix4x4) {
+        for m in &mut self.vertices {
+            mat.vecmul(m);
+        }
+    }
+
     pub fn apply(&mut self, mat: Matrix4x4) {
         for m in &mut self.vertices {
-            *m *= mat;
+            let v = Matrix4x4::from(*m);
+            *m = (mat * v).into();
         }
     }
 }
@@ -68,6 +75,12 @@ impl Mesh {
 
     pub fn as_vertices(&self) -> Vec<Vec<Vertex>> {
         self.tris.iter().map(|tri| tri.as_vertices()).collect()
+    }
+
+    pub fn apply_vec(&mut self, mat: Matrix4x4) {
+        for tri in &mut self.tris {
+            tri.apply_vec(mat);
+        }
     }
 
     pub fn apply(&mut self, mat: Matrix4x4) {

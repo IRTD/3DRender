@@ -18,17 +18,17 @@ impl Cube {
                     [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]],
                     [[0.0, 0.0, 0.0], [1.0, 1.0, 0.0], [1.0, 0.0, 0.0]],
                     // East
-                    [[1.0, 0.0, 0.0], [1.0, 1.0, 0.0], [2.0, 2.0, 2.0]],
-                    [[1.0, 0.0, 0.0], [2.0, 2.0, 2.0], [1.0, 0.0, 1.0]],
+                    [[1.0, 0.0, 0.0], [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]],
+                    [[1.0, 0.0, 0.0], [1.0, 1.0, 1.0], [1.0, 0.0, 1.0]],
                     // Back
-                    [[1.0, 0.0, 1.0], [2.0, 2.0, 2.0], [0.0, 1.0, 1.0]],
+                    [[1.0, 0.0, 1.0], [1.0, 1.0, 1.0], [0.0, 1.0, 1.0]],
                     [[1.0, 0.0, 1.0], [0.0, 1.0, 1.0], [0.0, 0.0, 1.0]],
                     // West
                     [[0.0, 0.0, 1.0], [0.0, 1.0, 1.0], [0.0, 1.0, 0.0]],
                     [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]],
                     // North
-                    [[0.0, 1.0, 0.0], [0.0, 1.0, 1.0], [2.0, 2.0, 2.0]],
-                    [[0.0, 1.0, 0.0], [2.0, 2.0, 2.0], [1.0, 1.0, 0.0]],
+                    [[0.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                    [[0.0, 1.0, 0.0], [1.0, 1.0, 1.0], [1.0, 1.0, 0.0]],
                     //South
                     [[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 1.0]],
                     [[0.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 0.0, 0.0]],
@@ -41,22 +41,26 @@ impl Cube {
 }
 
 fn main() {
+    let scale = Matrix4x4::scale(2.0);
     let mut cube = Cube::new();
-    let scale = Matrix4x4::scale(100.0);
+    cube.mesh.apply(scale);
     let fov = 90.0;
     let fov_rad = 1.0 / (fov * 0.5 / (fov * 2.0) * PI).tan();
     let proj = Matrix4x4::projection_3d(800.0 / 800.0, fov_rad, 1000.0, 0.1);
-    cube.mesh.apply(scale);
 
-    sdl2_render("Cube", 800, 600, cube, |c, cube| {
-        cube.mesh.apply(Matrix4x4::x_rot(0.02));
-        cube.mesh.apply(Matrix4x4::y_rot(0.03));
-        cube.mesh.apply(proj);
+    sdl2_render("Cube", 800, 800, cube, |c, cube| {
+        cube.mesh.apply_vec(Matrix4x4::x_rot(0.02));
+        cube.mesh.apply_vec(Matrix4x4::z_rot(0.01));
+        cube.mesh.apply_vec(Matrix4x4::y_rot(0.02));
+        // cube.mesh.apply_vec(proj);
         for verts in cube.mesh.as_vertices() {
             let verts = verts
                 .into_iter()
                 .map(|mut v| {
-                    v.scale(200.0);
+                    v.x += 3.0;
+                    v.y += 3.0;
+                    v.x *= 0.5 * 200.0;
+                    v.y *= 0.5 * 200.0;
                     v
                 })
                 .collect::<Vec<Vertex>>();

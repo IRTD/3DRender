@@ -19,6 +19,20 @@ impl Matrix4x4 {
         m
     }
 
+    pub fn vecmul(&self, og: &mut Vertex) {
+        let i = og.clone();
+        og.x = i.x * self[(0, 0)] + i.y * self[(1, 0)] + i.z * self[(2, 0)] + self[(3, 0)];
+        og.y = i.x * self[(0, 1)] + i.y * self[(1, 1)] + i.z * self[(2, 1)] + self[(3, 1)];
+        og.z = i.x * self[(0, 2)] + i.y * self[(1, 2)] + i.z * self[(2, 2)] + self[(3, 2)];
+        let w = i.x * self[(0, 3)] + i.y * self[(1, 3)] + i.z * self[(2, 3)] + self[(3, 3)];
+
+        if w != 0.0 {
+            og.x /= w;
+            og.y /= w;
+            og.z /= w;
+        }
+    }
+
     pub fn x_rot(angle: f64) -> Self {
         let mut m = Matrix4x4::default();
         m[(0, 0)] = 1.0;
@@ -46,6 +60,7 @@ impl Matrix4x4 {
         m[(2, 2)] = far / (far - near);
         m[(3, 2)] = (-far * near) / (far - near);
         m[(2, 3)] = 1.0;
+        m[(3, 3)] = 0.0;
         m
     }
 
@@ -93,6 +108,7 @@ impl Mul for Matrix4x4 {
                 }
             }
         }
+
         new
     }
 }
