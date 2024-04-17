@@ -40,13 +40,13 @@ impl Matrix4x4 {
     }
 
     pub fn projection_3d(aspect_ratio: f64, fov: f64, far: f64, near: f64) -> Self {
-        let q = far / (near - far);
+        let q = -far / (far - near);
         let mut m = Matrix4x4::default();
-        m[(0, 0)] = fov / aspect_ratio;
+        m[(0, 0)] = fov * aspect_ratio;
         m[(1, 1)] = fov;
         m[(2, 2)] = q;
-        m[(3, 2)] = -1.0;
-        m[(2, 3)] = q * near;
+        m[(2, 3)] = 1.0;
+        m[(3, 2)] = q * near;
         m
     }
 

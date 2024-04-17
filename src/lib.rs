@@ -17,3 +17,25 @@ impl From<[f64; 3]> for Vertex {
         }
     }
 }
+
+pub struct Triangle {
+    vertices: [Vertex; 3],
+}
+
+impl From<[[f64; 3]; 3]> for Triangle {
+    fn from(value: [[f64; 3]; 3]) -> Self {
+        Triangle {
+            vertices: value.map(|coords| Vertex::from(coords)),
+        }
+    }
+}
+
+pub struct Mesh {
+    tris: Vec<Triangle>,
+}
+
+impl Mesh {
+    pub fn new(tris: Vec<Triangle>) -> Self {
+        Mesh { tris }
+    }
+}
