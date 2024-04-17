@@ -1,11 +1,24 @@
 #![allow(unused)]
 
+use std::ops::*;
+
+use matrix::Matrix4x4;
+
 pub mod matrix;
 
+#[derive(Clone, Copy, Default)]
 pub struct Vertex {
     pub x: f64,
     pub y: f64,
     pub z: f64,
+}
+
+impl Vertex {
+    pub fn scale(&mut self, f: f64) {
+        self.x += f;
+        self.y += f;
+        self.z += f;
+    }
 }
 
 impl From<[f64; 3]> for Vertex {
@@ -18,18 +31,32 @@ impl From<[f64; 3]> for Vertex {
     }
 }
 
+#[derive(Clone, Copy, Default)]
 pub struct Triangle {
-    vertices: [Vertex; 3],
+    vertices: [Matrix4x4; 3],
 }
 
 impl From<[[f64; 3]; 3]> for Triangle {
     fn from(value: [[f64; 3]; 3]) -> Self {
         Triangle {
-            vertices: value.map(|coords| Vertex::from(coords)),
+            vertices: value.map(|coords| Vertex::from(coords).into()),
         }
     }
 }
 
+impl Triangle {
+    pub fn as_vertices(&self) -> Vec<Vertex> {
+        self.vertices.map(|mat| mat.into()).to_vec()
+    }
+
+    pub fn apply(&mut self, mat: Matrix4x4) {
+        for m in &mut self.vertices {
+            *m *= mat;
+        }
+    }
+}
+
+#[derive(Clone, Default)]
 pub struct Mesh {
     tris: Vec<Triangle>,
 }
@@ -37,5 +64,15 @@ pub struct Mesh {
 impl Mesh {
     pub fn new(tris: Vec<Triangle>) -> Self {
         Mesh { tris }
+    }
+
+    pub fn as_vertices(&self) -> Vec<Vec<Vertex>> {
+        self.tris.iter().map(|tri| tri.as_vertices()).collect()
+    }
+
+    pub fn apply(&mut self, mat: Matrix4x4) {
+        for tri in &mut self.tris {
+            tri.apply(mat);
+        }
     }
 }

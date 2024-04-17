@@ -1,6 +1,6 @@
 use std::{
     fmt::Display,
-    ops::{Index, IndexMut, Mul},
+    ops::{Index, IndexMut, Mul, MulAssign},
 };
 
 use crate::Vertex;
@@ -39,14 +39,13 @@ impl Matrix4x4 {
         m
     }
 
-    pub fn projection_3d(aspect_ratio: f64, fov: f64, far: f64, near: f64) -> Self {
-        let q = -far / (far - near);
+    pub fn projection_3d(aspect_ratio: f64, fov_rad: f64, far: f64, near: f64) -> Self {
         let mut m = Matrix4x4::default();
-        m[(0, 0)] = fov * aspect_ratio;
-        m[(1, 1)] = fov;
-        m[(2, 2)] = q;
+        m[(0, 0)] = aspect_ratio * fov_rad;
+        m[(1, 1)] = fov_rad;
+        m[(2, 2)] = far / (far - near);
+        m[(3, 2)] = (-far * near) / (far - near);
         m[(2, 3)] = 1.0;
-        m[(3, 2)] = q * near;
         m
     }
 
@@ -95,6 +94,12 @@ impl Mul for Matrix4x4 {
             }
         }
         new
+    }
+}
+
+impl MulAssign for Matrix4x4 {
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = *self * rhs;
     }
 }
 
