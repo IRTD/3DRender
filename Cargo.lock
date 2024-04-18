@@ -69,6 +69,10 @@ name = "trigger"
 version = "0.1.0"
 
 [[package]]
+name = "trigger_display"
+version = "0.1.0"
+
+[[package]]
 name = "version-compare"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

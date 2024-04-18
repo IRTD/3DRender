@@ -1,6 +1,5 @@
-workspace = { members = ["cube", "trigger_display"] }
 [package]
-name = "trigger"
+name = "trigger_display"
 version = "0.1.0"
 edition = "2021"
 
