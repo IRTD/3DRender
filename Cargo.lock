@@ -27,6 +27,7 @@ dependencies = [
  "anyhow",
  "sdl2",
  "trigger",
+ "trigger_sdl2",
 ]
 
 [[package]]
@@ -71,6 +72,17 @@ version = "0.1.0"
 [[package]]
 name = "trigger_display"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
+
+[[package]]
+name = "trigger_sdl2"
+version = "0.1.0"
+dependencies = [
+ "sdl2",
+ "trigger_display",
+]
 
 [[package]]
 name = "version-compare"

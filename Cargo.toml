@@ -1,4 +1,4 @@
-workspace = { members = ["cube", "trigger_display"] }
+workspace = { members = ["cube", "trigger_display", "trigger_sdl2"] }
 [package]
 name = "trigger"
 version = "0.1.0"

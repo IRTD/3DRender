@@ -1,9 +1,25 @@
 // Defines the traits and shared values for display services, using the trigger 3D rendering
 // engine
 
+pub use anyhow;
+
 /// The total engine responsible for displaying the vertices passed in
 pub trait DisplayEngine {
-    fn setup(settings: impl Settings) -> Self;
+    type Context;
+    type Canvas;
+    type Settings: Settings;
+    type CreateError;
+    type RenderError;
+    fn new(settings: Self::Settings) -> Result<Self, Self::CreateError>
+    where
+        Self: Sized;
+    fn render_setup<F>(&mut self, f: F) -> anyhow::Result<()>
+    where
+        F: FnOnce(&mut Self::Context) -> anyhow::Result<()>;
+
+    fn render<F>(&mut self, f: F) -> Result<(), Self::RenderError>
+    where
+        F: Fn(&mut Self::Canvas, &mut Self::Context) -> Result<(), Self::RenderError>;
 }
 
 /// Settings used for the Setup of the engine
