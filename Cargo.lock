@@ -67,6 +67,9 @@ dependencies = [
 [[package]]
 name = "trigger"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
 
 [[package]]
 name = "trigger_display"

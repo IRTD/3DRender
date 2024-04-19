@@ -1,10 +1,9 @@
 #![allow(unused)]
 
-use std::ops::*;
-
+pub mod matrix;
 use matrix::Matrix4x4;
 
-pub mod matrix;
+use std::{collections::VecDeque, fs::OpenOptions, io::BufRead, io::BufReader, path::PathBuf};
 
 #[derive(Clone, Copy, Default)]
 pub struct Vertex {
@@ -114,4 +113,40 @@ impl Mesh {
             tri.apply(mat);
         }
     }
+
+    pub fn load_obj(path: impl Into<PathBuf>) -> anyhow::Result<Self> {
+        let p = path.into();
+        let f = OpenOptions::new().read(true).write(false).open(p)?;
+        let reader = BufReader::new(f);
+        let mut verts: VecDeque<Vertex> = VecDeque::new();
+        let mut tris: Vec<Triangle> = Vec::new();
+        for line in reader.lines() {
+            let line = line?;
+            if line.starts_with("#") {
+                continue;
+            }
+
+            if line.starts_with("v") {
+                let vertex = parse_obj_vertex(line)?;
+                verts.push_back(vertex);
+            } else if line.starts_with("")
+        }
+        todo!()
+    }
+}
+
+// Example line: v 2.0 5.0 10.0
+fn parse_obj_vertex(line: String) -> anyhow::Result<Vertex> {
+    let coords = &line.split_whitespace().collect::<Vec<&str>>()[1..];
+    let mut v: [Option<f64>; 3] = [None; 3];
+    for (i, coord) in coords.into_iter().enumerate() {
+        let value: f64 = coord.parse()?;
+        v[i] = Some(value);
+    }
+
+    Ok(Vertex {
+        x: v[0].unwrap(),
+        y: v[1].unwrap(),
+        z: v[2].unwrap(),
+    })
 }
