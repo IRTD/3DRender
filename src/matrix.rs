@@ -1,4 +1,5 @@
 use std::{
+    f64::consts::PI,
     fmt::Display,
     ops::{Index, IndexMut, Mul, MulAssign},
 };
@@ -13,7 +14,7 @@ pub struct Matrix4x4 {
 impl Matrix4x4 {
     pub fn scale(factor: f64) -> Self {
         let mut m = Matrix4x4::default();
-        for i in 0..=2 {
+        for i in 0..=3 {
             m[(i, i)] = factor;
         }
         m
@@ -53,14 +54,15 @@ impl Matrix4x4 {
         m
     }
 
-    pub fn projection_3d(aspect_ratio: f64, fov_rad: f64, far: f64, near: f64) -> Self {
+    pub fn projection_3d(fov: f64, aspect_ratio: f64, far: f64, near: f64) -> Self {
+        let fov = fov * (PI / (180.0));
+        let f = 1.0 / (fov / 2.0).tan();
         let mut m = Matrix4x4::default();
-        m[(0, 0)] = aspect_ratio * fov_rad;
-        m[(1, 1)] = fov_rad;
-        m[(2, 2)] = far / (far - near);
-        m[(3, 2)] = (-far * near) / (far - near);
+        m[(0, 0)] = f * aspect_ratio;
+        m[(1, 1)] = f;
+        m[(2, 2)] = (far + near) / (far - near);
         m[(2, 3)] = 1.0;
-        m[(3, 3)] = 0.0;
+        m[(3, 2)] = (2.0 * near * far) / (near - far);
         m
     }
 
