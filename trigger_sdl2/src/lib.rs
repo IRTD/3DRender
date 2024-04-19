@@ -11,7 +11,9 @@ pub struct SDL2Display<T> {
     bg_color: Color,
     draw_color: Color,
     time: Instant,
+    frame_time: Instant,
     delta: f64,
+    frame_delta: f64,
 }
 
 pub struct SDL2Context<T> {
@@ -19,6 +21,7 @@ pub struct SDL2Context<T> {
     frames: f32,
     pub delta_time_s: f64,
     pub ctx: Option<T>,
+    pub frame_delta_s: f64,
 }
 
 impl<T> SDL2Context<T> {
@@ -49,6 +52,7 @@ impl<T> DisplayEngine for SDL2Display<T> {
             pump: sdl.event_pump()?,
             frames: settings.fps,
             delta_time_s: 1.0,
+            frame_delta_s: 1.0,
             ctx: None,
         };
 
@@ -58,6 +62,8 @@ impl<T> DisplayEngine for SDL2Display<T> {
             bg_color: Color::BLACK,
             draw_color: Color::WHITE,
             time: Instant::now(),
+            frame_time: Instant::now(),
+            frame_delta: 1.0,
             delta: 1.0,
         })
     }
@@ -75,8 +81,10 @@ impl<T> DisplayEngine for SDL2Display<T> {
     where
         F: Fn(&mut Self::Canvas, &mut Self::Context) -> Result<(), Self::RenderError>,
     {
+        self.time = Instant::now();
         loop {
-            self.time = Instant::now();
+            self.frame_time = Instant::now();
+            self.context.frame_delta_s = self.frame_delta;
             self.context.delta_time_s = self.delta;
             self.canvas.set_draw_color(self.bg_color);
             self.canvas.clear();
@@ -86,6 +94,7 @@ impl<T> DisplayEngine for SDL2Display<T> {
             let fps = 1_000.0 / self.context.frames;
             std::thread::sleep(Duration::from_millis(fps as u64));
             self.delta = self.time.elapsed().as_secs_f64();
+            self.frame_delta = self.frame_time.elapsed().as_secs_f64();
         }
     }
 }

@@ -37,10 +37,11 @@ impl Matrix4x4 {
     pub fn x_rot(angle: f64) -> Self {
         let mut m = Matrix4x4::default();
         m[(0, 0)] = 1.0;
-        m[(1, 1)] = angle.cos();
-        m[(2, 2)] = angle.cos();
-        m[(2, 1)] = angle.sin();
-        m[(1, 2)] = -angle.sin();
+        m[(1, 1)] = (angle * 0.5).cos();
+        m[(2, 2)] = (angle * 0.5).cos();
+        m[(2, 1)] = (angle * 0.5).sin();
+        m[(1, 2)] = (-angle * 0.5).sin();
+        m[(3, 3)] = 1.0;
         m
     }
 
@@ -51,6 +52,7 @@ impl Matrix4x4 {
         m[(1, 1)] = 1.0;
         m[(2, 0)] = -angle.sin();
         m[(2, 2)] = angle.cos();
+        m[(3, 3)] = 1.0;
         m
     }
 
@@ -73,6 +75,7 @@ impl Matrix4x4 {
         m[(1, 0)] = angle.sin();
         m[(1, 1)] = angle.cos();
         m[(2, 2)] = 1.0;
+        m[(3, 3)] = 1.0;
         m
     }
 }

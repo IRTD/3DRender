@@ -33,7 +33,7 @@ impl From<[f64; 3]> for Vertex {
 
 #[derive(Clone, Copy, Default)]
 pub struct Triangle {
-    vertices: [Vertex; 3],
+    pub vertices: [Vertex; 3],
 }
 
 impl From<[[f64; 3]; 3]> for Triangle {
@@ -61,11 +61,37 @@ impl Triangle {
             *m = (mat * v).into();
         }
     }
+
+    pub fn scale_mul(&mut self, factor: f64, axis: Axis) {
+        for v in &mut self.vertices {
+            match axis {
+                Axis::X => v.x *= factor,
+                Axis::Y => v.y *= factor,
+                Axis::Z => v.z *= factor,
+            }
+        }
+    }
+
+    pub fn scale_add(&mut self, factor: f64, axis: Axis) {
+        for v in &mut self.vertices {
+            match axis {
+                Axis::X => v.x += factor,
+                Axis::Y => v.y += factor,
+                Axis::Z => v.z += factor,
+            }
+        }
+    }
+}
+
+pub enum Axis {
+    X,
+    Y,
+    Z,
 }
 
 #[derive(Clone, Default)]
 pub struct Mesh {
-    tris: Vec<Triangle>,
+    pub tris: Vec<Triangle>,
 }
 
 impl Mesh {
