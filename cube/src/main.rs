@@ -55,8 +55,7 @@ fn main() {
     let mut display = SDL2Display::<Ctx>::new(settings).unwrap();
     display
         .render_setup(|ctx| {
-            let mut ship = Mesh::load_obj("../teapot.obj")?;
-            ship.apply_vec(Matrix4x4::x_rot(270.0));
+            let mut ship = Mesh::load_obj("../ship.obj")?;
             let c = Ctx {
                 ship,
                 fov: 90.0,
@@ -75,10 +74,10 @@ fn main() {
             let cube = &mut ct.ship;
 
             // Rotate in the X Axis
-            // cube.apply_vec(Matrix4x4::x_rot(theta));
+            cube.apply_vec(Matrix4x4::x_rot(theta));
 
             // Rotate in the Z Axis
-            cube.apply_vec(Matrix4x4::y_rot(theta));
+            cube.apply_vec(Matrix4x4::z_rot(-theta));
 
             // Check for any events and if Quit is called exit
             for event in ctx.pump.poll_iter() {
@@ -95,7 +94,7 @@ fn main() {
             let mut cube = ct.ship.clone();
             for tri in &mut cube.tris {
                 // Scale into view on the Z axis
-                tri.scale_add(20.0, Axis::Z);
+                tri.scale_add(22.0, Axis::Z);
                 tri.apply_vec(mat_proj);
 
                 //Scale up to size
