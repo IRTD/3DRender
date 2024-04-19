@@ -45,7 +45,7 @@ impl Cube {
 
 #[derive(Clone)]
 struct Ctx {
-    cube: Cube,
+    ship: Mesh,
     fov: f64,
     x_shift: f64,
 }
@@ -55,9 +55,10 @@ fn main() {
     let mut display = SDL2Display::<Ctx>::new(settings).unwrap();
     display
         .render_setup(|ctx| {
-            let mut cube = Cube::new();
+            let mut ship = Mesh::load_obj("../teapot.obj")?;
+            ship.apply_vec(Matrix4x4::x_rot(270.0));
             let c = Ctx {
-                cube,
+                ship,
                 fov: 90.0,
                 x_shift: 0.0,
             };
@@ -71,13 +72,13 @@ fn main() {
 
             // Take the angle times the time difference between frames
             let theta = 1.0 * ctx.frame_delta_s;
-            let cube = &mut ct.cube;
+            let cube = &mut ct.ship;
 
             // Rotate in the X Axis
-            cube.mesh.apply_vec(Matrix4x4::x_rot(theta));
+            // cube.apply_vec(Matrix4x4::x_rot(theta));
 
-            // Rotate in the Y Axis
-            cube.mesh.apply_vec(Matrix4x4::z_rot(theta));
+            // Rotate in the Z Axis
+            cube.apply_vec(Matrix4x4::y_rot(theta));
 
             // Check for any events and if Quit is called exit
             for event in ctx.pump.poll_iter() {
@@ -91,10 +92,10 @@ fn main() {
 
             // Clone the cube for display only, do not want to alter the original cube with the
             // perspective projection matrix
-            let mut cube = ct.cube.clone();
-            for tri in &mut cube.mesh.tris {
+            let mut cube = ct.ship.clone();
+            for tri in &mut cube.tris {
                 // Scale into view on the Z axis
-                tri.scale_add(10.0, Axis::Z);
+                tri.scale_add(20.0, Axis::Z);
                 tri.apply_vec(mat_proj);
 
                 //Scale up to size

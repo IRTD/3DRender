@@ -1,9 +1,12 @@
 #![allow(unused)]
 
 pub mod matrix;
+use anyhow::anyhow;
 use matrix::Matrix4x4;
 
-use std::{collections::VecDeque, fs::OpenOptions, io::BufRead, io::BufReader, path::PathBuf};
+use std::{
+    collections::VecDeque, fs::OpenOptions, io::BufRead, io::BufReader, ops::Index, path::PathBuf,
+};
 
 #[derive(Clone, Copy, Default)]
 pub struct Vertex {
@@ -118,9 +121,11 @@ impl Mesh {
         let p = path.into();
         let f = OpenOptions::new().read(true).write(false).open(p)?;
         let reader = BufReader::new(f);
+        let lines = reader.lines();
         let mut verts: VecDeque<Vertex> = VecDeque::new();
         let mut tris: Vec<Triangle> = Vec::new();
-        for line in reader.lines() {
+        // Collect all vertices and triangles
+        for line in lines {
             let line = line?;
             if line.starts_with("#") {
                 continue;
@@ -129,10 +134,28 @@ impl Mesh {
             if line.starts_with("v") {
                 let vertex = parse_obj_vertex(line)?;
                 verts.push_back(vertex);
-            } else if line.starts_with("")
+            } else if line.starts_with("f") {
+                let tri = parse_obj_face(line, &verts)?;
+                tris.push(tri);
+            }
         }
-        todo!()
+
+        Ok(Mesh { tris })
     }
+}
+
+// Exmaple line: f 21 52 23
+fn parse_obj_face(
+    line: String,
+    vertices: &impl Index<usize, Output = Vertex>,
+) -> anyhow::Result<Triangle> {
+    let idxs = &line.split_whitespace().collect::<Vec<&str>>()[1..];
+    let mut tri = Triangle::default();
+    for (i, idx) in idxs.iter().enumerate() {
+        let v_idx: usize = (idx.parse::<usize>()?) - 1;
+        tri.vertices[i] = vertices[v_idx];
+    }
+    Ok(tri)
 }
 
 // Example line: v 2.0 5.0 10.0
