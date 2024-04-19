@@ -68,27 +68,44 @@ fn main() {
     display
         .render(|c, ctx| {
             let mut ct = ctx.ctx.as_mut().unwrap();
+
+            // Take the angle times the time difference between frames
             let theta = 1.0 * ctx.frame_delta_s;
             let cube = &mut ct.cube;
+
+            // Rotate in the X Axis
             cube.mesh.apply_vec(Matrix4x4::x_rot(theta));
+
+            // Rotate in the Y Axis
             cube.mesh.apply_vec(Matrix4x4::z_rot(theta));
+
+            // Check for any events and if Quit is called exit
             for event in ctx.pump.poll_iter() {
                 match event {
                     Event::Quit { .. } => return Err("Quitting...".to_string()),
                     _ => {}
                 }
             }
+
             let mat_proj = Matrix4x4::projection_3d(ct.fov, 800.0 / 800.0, 1000.0, 0.1);
 
+            // Clone the cube for display only, do not want to alter the original cube with the
+            // perspective projection matrix
             let mut cube = ct.cube.clone();
             for tri in &mut cube.mesh.tris {
+                // Scale into view on the Z axis
                 tri.scale_add(10.0, Axis::Z);
                 tri.apply_vec(mat_proj);
+
+                //Scale up to size
                 tri.scale_mul(1500.0, Axis::X);
                 tri.scale_mul(1500.0, Axis::Y);
+
+                // Set into the middle of the window
                 tri.scale_add(0.5 * 800.0, Axis::X);
                 tri.scale_add(0.5 * 800.0, Axis::Y);
 
+                // Create points of vertices and draw them with lines in between
                 let p1 = (tri.vertices[0].x as i32, tri.vertices[0].y as i32);
                 let p2 = (tri.vertices[1].x as i32, tri.vertices[1].y as i32);
                 let p3 = (tri.vertices[2].x as i32, tri.vertices[2].y as i32);
