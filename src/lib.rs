@@ -21,6 +21,10 @@ impl Vertex {
         self.y += f;
         self.z += f;
     }
+
+    pub fn apply_vec(&mut self, m: Matrix4x4) {
+        m.vecmul(self);
+    }
 }
 
 impl From<[f64; 3]> for Vertex {
@@ -172,4 +176,27 @@ fn parse_obj_vertex(line: String) -> anyhow::Result<Vertex> {
         y: v[1].unwrap(),
         z: v[2].unwrap(),
     })
+}
+
+#[derive(Clone)]
+pub struct Camera {
+    pub pos: Vertex,
+    pub fov: f64,
+}
+
+impl Camera {
+    pub fn new(pos: [f64; 3], fov: f64) -> Self {
+        Camera {
+            pos: Vertex::from(pos),
+            fov,
+        }
+    }
+
+    pub fn shift(&mut self, amount: f64, axis: Axis) {
+        match axis {
+            Axis::X => self.pos.x += amount,
+            Axis::Y => self.pos.y += amount,
+            Axis::Z => self.pos.z += amount,
+        }
+    }
 }
