@@ -50,33 +50,26 @@ struct Ctx {
 }
 
 fn main() {
-    let settings = SDL2Settings::new().width(800).height(800).fps(150.0);
+    let settings = SDL2Settings::new().width(1500).height(1500).fps(150.0);
     let mut display = SDL2Display::<Ctx>::new(settings).unwrap();
     display
         .render_setup(|ctx| {
             let mut ship = Mesh::load_obj("../ship.obj")?;
             let c = Ctx {
-                ship: Cube::new().mesh,
-                camera: Camera::new([200.0, 200.0, 20.0], 90.0),
+                ship,
+                camera: Camera::new([0.0, 2.0, 10.0], 90.0),
             };
             ctx.ctx = Some(c);
             Ok(())
         })
         .unwrap();
+
     display
         .render(|c, ctx| {
             let mut ct = ctx.ctx.as_mut().unwrap();
 
             // Take the angle times the time difference between frames
-            let theta = 2.0 * ctx.delta_time_s;
-            let mat_proj = Matrix4x4::projection_3d(ct.camera.fov, 800.0 / 800.0, 1000.0, 0.1);
-            let mut cube = ct.ship.clone();
-            let mut rot = Matrix4x4::x_rot(theta);
-            rot *= Matrix4x4::y_rot(-theta);
-            // cube.apply_vec(rot);
-            cube.apply_vec(Matrix4x4::translate(2.0, 2.0, 1.0));
-
-            // Check for any events and if Quit is called exit
+            let theta = 2.0 * ctx.frame_delta_s;
             for event in ctx.pump.poll_iter() {
                 match event {
                     Event::Quit { .. } => return Err("Quitting...".to_string()),
@@ -94,12 +87,16 @@ fn main() {
                         };
 
                         match k {
-                            Keycode::W => ct.camera.pos.z -= 0.5,
-                            Keycode::S => ct.camera.pos.z += 0.5,
-                            Keycode::D => ct.camera.pos.x -= 6.5,
-                            Keycode::A => ct.camera.pos.x += 6.5,
-                            Keycode::Q => cube.apply_vec(Matrix4x4::y_rot(-theta)),
-                            Keycode::E => cube.apply_vec(Matrix4x4::y_rot(theta)),
+                            Keycode::W => ct.camera.pos.z -= 30.0 * ctx.frame_delta_s,
+                            Keycode::S => ct.camera.pos.z += 30.0 * ctx.frame_delta_s,
+                            Keycode::Space => ct.camera.pos.y += 30.0 * ctx.frame_delta_s,
+                            Keycode::X => ct.camera.pos.y -= 30.0 * ctx.frame_delta_s,
+                            Keycode::D => ct.camera.pos.x -= 10.0 * ctx.frame_delta_s,
+                            Keycode::A => ct.camera.pos.x += 10.0 * ctx.frame_delta_s,
+                            Keycode::Q => {
+                                ct.ship.apply_vec(Matrix4x4::y_rot(-theta));
+                            }
+                            Keycode::E => ct.ship.apply_vec(Matrix4x4::y_rot(theta)),
                             _ => {}
                         }
                     }
@@ -107,20 +104,25 @@ fn main() {
                 }
             }
 
-            // Clone the cube for display only, do not want to alter the original cube with the
-            // perspective projection matrix
+            let mat_proj = Matrix4x4::projection_3d(ct.camera.fov, 800.0 / 800.0, 1000.0, 0.1);
+            let mut cube = ct.ship.clone();
+            cube.apply_vec(Matrix4x4::translate(
+                ct.camera.pos.x,
+                ct.camera.pos.y,
+                ct.camera.pos.z,
+            ));
+
+            // Check for any events and if Quit is called exit
             for tri in &mut cube.tris {
-                // Scale into view on the Z axis
-                tri.scale_add(ct.camera.pos.z, Axis::Z);
                 tri.apply_vec(mat_proj);
 
-                //Scale up to size
+                // Scale up to size
                 tri.scale_mul(1500.0, Axis::X);
                 tri.scale_mul(1500.0, Axis::Y);
 
-                // Set into the middle of the window
-                tri.scale_add(ct.camera.pos.x, Axis::X);
-                tri.scale_add(ct.camera.pos.y, Axis::Y);
+                // Set into the middle of the window and offset according to camera
+                tri.scale_add(750.0 + ct.camera.pos.x, Axis::X);
+                tri.scale_add(400.0 + ct.camera.pos.y, Axis::Y);
 
                 // Create points of vertices and draw them with lines in between
                 let p1 = (tri.vertices[0].x as i32, tri.vertices[0].y as i32);
