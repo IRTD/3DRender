@@ -93,9 +93,7 @@ fn main() {
                             Keycode::X => ct.camera.pos.y -= 30.0 * ctx.frame_delta_s,
                             Keycode::D => ct.camera.pos.x -= 10.0 * ctx.frame_delta_s,
                             Keycode::A => ct.camera.pos.x += 10.0 * ctx.frame_delta_s,
-                            Keycode::Q => {
-                                ct.ship.apply_vec(Matrix4x4::y_rot(-theta));
-                            }
+                            Keycode::Q => ct.ship.apply_vec(Matrix4x4::y_rot(-theta)),
                             Keycode::E => ct.ship.apply_vec(Matrix4x4::y_rot(theta)),
                             _ => {}
                         }
