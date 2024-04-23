@@ -14,9 +14,17 @@ pub struct Matrix4x4 {
 impl Matrix4x4 {
     pub fn scale(factor: f64) -> Self {
         let mut m = Matrix4x4::default();
-        for i in 0..=3 {
+        for i in 0..=2 {
             m[(i, i)] = factor;
         }
+        m
+    }
+
+    pub fn translate(x: f64, y: f64, z: f64) -> Self {
+        let mut m = Matrix4x4::scale(1.0);
+        m[(3, 0)] = x;
+        m[(3, 1)] = y;
+        m[(3, 2)] = z;
         m
     }
 

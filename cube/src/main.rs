@@ -57,7 +57,7 @@ fn main() {
             let mut ship = Mesh::load_obj("../ship.obj")?;
             let c = Ctx {
                 ship: Cube::new().mesh,
-                camera: Camera::new([400.0, 400.0, 10.0], 90.0),
+                camera: Camera::new([200.0, 200.0, 20.0], 90.0),
             };
             ctx.ctx = Some(c);
             Ok(())
@@ -68,14 +68,13 @@ fn main() {
             let mut ct = ctx.ctx.as_mut().unwrap();
 
             // Take the angle times the time difference between frames
-            let theta = 1.0 * ctx.frame_delta_s;
-            let cube = &mut ct.ship;
-
-            // Rotate in the X Axis
-            cube.apply_vec(Matrix4x4::x_rot(theta));
-
-            // Rotate in the Z Axis
-            cube.apply_vec(Matrix4x4::z_rot(-theta));
+            let theta = 2.0 * ctx.delta_time_s;
+            let mat_proj = Matrix4x4::projection_3d(ct.camera.fov, 800.0 / 800.0, 1000.0, 0.1);
+            let mut cube = ct.ship.clone();
+            let mut rot = Matrix4x4::x_rot(theta);
+            rot *= Matrix4x4::y_rot(-theta);
+            // cube.apply_vec(rot);
+            cube.apply_vec(Matrix4x4::translate(2.0, 2.0, 1.0));
 
             // Check for any events and if Quit is called exit
             for event in ctx.pump.poll_iter() {
@@ -95,22 +94,21 @@ fn main() {
                         };
 
                         match k {
-                            Keycode::A => ct.camera.shift(5.0, Axis::X),
-                            Keycode::D => ct.camera.shift(-5.0, Axis::X),
-                            Keycode::W => ct.camera.fov -= 0.5,
-                            Keycode::S => ct.camera.fov += 0.5,
+                            Keycode::W => ct.camera.pos.z -= 0.5,
+                            Keycode::S => ct.camera.pos.z += 0.5,
+                            Keycode::D => ct.camera.pos.x -= 6.5,
+                            Keycode::A => ct.camera.pos.x += 6.5,
+                            Keycode::Q => cube.apply_vec(Matrix4x4::y_rot(-theta)),
+                            Keycode::E => cube.apply_vec(Matrix4x4::y_rot(theta)),
                             _ => {}
                         }
                     }
-                    _ => {}
+                    _ => continue,
                 }
             }
 
-            let mat_proj = Matrix4x4::projection_3d(ct.camera.fov, 800.0 / 800.0, 1000.0, 0.1);
-
             // Clone the cube for display only, do not want to alter the original cube with the
             // perspective projection matrix
-            let mut cube = ct.ship.clone();
             for tri in &mut cube.tris {
                 // Scale into view on the Z axis
                 tri.scale_add(ct.camera.pos.z, Axis::Z);
