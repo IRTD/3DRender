@@ -2,6 +2,9 @@
 
 use std::time::Duration;
 
+use sdl2::pixels::Color;
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 use sdl2::{event::Event, keyboard::Keycode};
 use trigger::matrix::*;
 use trigger::*;
@@ -43,6 +46,14 @@ impl Cube {
     }
 }
 
+fn bottom_flat_tri() -> Mesh {
+    Mesh::new(
+        [[[1.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]]
+            .map(|coords| Triangle::from(coords))
+            .to_vec(),
+    )
+}
+
 #[derive(Clone)]
 struct Ctx {
     ship: Mesh,
@@ -69,7 +80,7 @@ fn main() {
             let mut ct = ctx.ctx.as_mut().unwrap();
 
             // Take the angle times the time difference between frames
-            let theta = 2.0 * ctx.frame_delta_s;
+            let theta = 5.0 * ctx.frame_delta_s;
             for event in ctx.pump.poll_iter() {
                 match event {
                     Event::Quit { .. } => return Err("Quitting...".to_string()),
@@ -122,6 +133,7 @@ fn main() {
                 tri.scale_add(750.0 + ct.camera.pos.x, Axis::X);
                 tri.scale_add(400.0 + ct.camera.pos.y, Axis::Y);
 
+                c.set_draw_color(Color::GREY);
                 // Create points of vertices and draw them with lines in between
                 let p1 = (tri.vertices[0].x as i32, tri.vertices[0].y as i32);
                 let p2 = (tri.vertices[1].x as i32, tri.vertices[1].y as i32);
@@ -129,9 +141,61 @@ fn main() {
                 c.draw_line(p1, p2)?;
                 c.draw_line(p2, p3)?;
                 c.draw_line(p3, p1)?;
+
+                // Fill triangle
+                c.set_draw_color(Color::WHITE);
+                let mut t = *tri;
+                t.vertices
+                    .sort_by(|v1, v2| v1.y.partial_cmp(&v2.y).unwrap());
+                fill_flat_bottom_tri(c, t);
+                fill_flat_top_tri(c, t);
             }
 
             Ok(())
         })
         .unwrap()
+}
+
+fn fill_flat_bottom_tri(c: &mut Canvas<Window>, tri: Triangle) -> Result<(), String> {
+    let v = tri.vertices;
+    let invslope1 = (v[1].x - v[0].x) / (v[1].y - v[0].y);
+    let invslope2 = (v[2].x - v[0].x) / (v[2].y - v[0].y);
+
+    let mut curx1 = v[0].x;
+    let mut curx2 = v[0].x;
+    let mut scanline_y = v[0].y;
+
+    while scanline_y <= v[1].y {
+        c.draw_line(
+            (curx1 as i32, scanline_y as i32),
+            (curx2 as i32, scanline_y as i32),
+        )?;
+        curx1 += invslope1;
+        curx2 += invslope2;
+        scanline_y += 1.0;
+    }
+
+    Ok(())
+}
+
+fn fill_flat_top_tri(c: &mut Canvas<Window>, tri: Triangle) -> Result<(), String> {
+    let v = tri.vertices;
+    let invslope1 = (v[2].x - v[0].x) / (v[2].y - v[0].y);
+    let invslope2 = (v[2].x - v[1].x) / (v[2].y - v[1].y);
+
+    let mut curx1 = v[2].x;
+    let mut curx2 = v[2].x;
+    let mut scanline_y = v[2].y;
+
+    while scanline_y >= v[1].y {
+        c.draw_line(
+            (curx1 as i32, scanline_y as i32),
+            (curx2 as i32, scanline_y as i32),
+        )?;
+        curx1 -= invslope1;
+        curx2 -= invslope2;
+        scanline_y -= 1.0;
+    }
+
+    Ok(())
 }
